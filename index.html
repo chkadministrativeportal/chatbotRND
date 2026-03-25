@@ -1228,12 +1228,12 @@ Enabler.exit("Court 4", "https://docs.google.com/spreadsheets/d/e/2PACX-1vSXeutT
   cursor: grab;
   user-select: none;
   touch-action: none;
-  filter: drop-shadow(0 6px 18px rgba(0,0,0,0.5));
-  transition: filter 0.2s, transform 0.2s;
+  filter: drop-shadow(0 4px 14px rgba(0,0,0,0.55));
+  transition: filter 0.2s;
 }
-#chk-bot-icon:active { cursor: grabbing; filter: drop-shadow(0 8px 24px rgba(0,0,0,0.7)); transform: scale(0.97); }
+#chk-bot-icon:active { cursor: grabbing; filter: drop-shadow(0 6px 18px rgba(0,0,0,0.7)); }
 
-/* Icon image — transparent bg, 3D sphere look */
+/* Icon image with transparent bg via mix-blend */
 #chk-bot-icon-img {
   width: 80px;
   height: 80px;
@@ -1241,25 +1241,19 @@ Enabler.exit("Court 4", "https://docs.google.com/spreadsheets/d/e/2PACX-1vSXeutT
   object-fit: cover;
   display: block;
   background: transparent;
-  /* 3D sphere sheen overlay */
-  box-shadow:
-    inset -4px -4px 12px rgba(0,0,0,0.35),
-    inset 3px 3px 8px rgba(255,255,255,0.25),
-    0 6px 20px rgba(0,0,0,0.45),
-    0 2px 6px rgba(0,0,0,0.3);
-  border: 2px solid rgba(255,255,255,0.18);
+  /* remove black bg */
+  mix-blend-mode: normal;
 }
 
-/* Waving hand emoji — moved to LEFT side */
+/* Waving hand emoji */
 #chk-bot-wave {
   position: absolute;
   bottom: -4px;
-  left: -6px;
-  right: auto;
+  right: -6px;
   font-size: 22px;
   line-height: 1;
   animation: chk-wave-anim 1.8s ease-in-out infinite;
-  transform-origin: 30% 80%;
+  transform-origin: 70% 80%;
   pointer-events: none;
   filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4));
 }
@@ -1590,51 +1584,30 @@ Enabler.exit("Court 4", "https://docs.google.com/spreadsheets/d/e/2PACX-1vSXeutT
 
   /* System prompt for Claude */
   var SYSTEM = [
-    "You are CHK Venue Assistant, a friendly and professional AI chatbot for CHK Administrative Portal (UP Cebu CHK - venue reservation and facilities management).",
-    "You help staff and guests check availability of facilities, understand reservation schedules, and answer questions about venue bookings.",
+    "You are CHK Venue Assistant, a friendly and professional AI chatbot for CHK (a venue reservation and facilities management company in the Philippines).",
+    "You help guests check availability of facilities and answer questions about reservations.",
     "",
-    "AVAILABLE FACILITIES AND THEIR LIVE CALENDAR DATA (Google Sheets — each sheet shows availability and approved reservations):",
+    "FACILITIES AVAILABLE (from the venue's Google Sheets data):",
+    "- Function Hall / Event Hall",
+    "- Audio-Visual (AV) Room",
+    "- Conference/Meeting Rooms",
+    "- Sports Facilities",
+    "- Outdoor Venues",
+    "- Other amenities listed in the reservation system",
     "",
-    "SPORTS/OUTDOOR FACILITIES:",
-    "  Baseball Field: https://docs.google.com/spreadsheets/d/e/2PACX-1vSXeutTA06JvvIqDmAr7g14ZaOYrxOUeNRbNMrVD_1ETNo_oA8dQmmUheN_KwPQ6IomCjZgr7q5fO6K/pubhtml?gid=593929024&single=true",
-    "  Baseball Garden: https://docs.google.com/spreadsheets/d/e/2PACX-1vSXeutTA06JvvIqDmAr7g14ZaOYrxOUeNRbNMrVD_1ETNo_oA8dQmmUheN_KwPQ6IomCjZgr7q5fO6K/pubhtml?gid=567935148&single=true",
-    "  Football Field: https://docs.google.com/spreadsheets/d/e/2PACX-1vSXeutTA06JvvIqDmAr7g14ZaOYrxOUeNRbNMrVD_1ETNo_oA8dQmmUheN_KwPQ6IomCjZgr7q5fO6K/pubhtml?gid=1055806031&single=true",
-    "  Track Oval: https://docs.google.com/spreadsheets/d/e/2PACX-1vSXeutTA06JvvIqDmAr7g14ZaOYrxOUeNRbNMrVD_1ETNo_oA8dQmmUheN_KwPQ6IomCjZgr7q5fO6K/pubhtml?gid=426248820&single=true",
-    "  Dugout 1: https://docs.google.com/spreadsheets/d/e/2PACX-1vSXeutTA06JvvIqDmAr7g14ZaOYrxOUeNRbNMrVD_1ETNo_oA8dQmmUheN_KwPQ6IomCjZgr7q5fO6K/pubhtml?gid=87197056&single=true",
-    "  Dugout 2: https://docs.google.com/spreadsheets/d/e/2PACX-1vSXeutTA06JvvIqDmAr7g14ZaOYrxOUeNRbNMrVD_1ETNo_oA8dQmmUheN_KwPQ6IomCjZgr7q5fO6K/pubhtml?gid=306081692&single=true",
+    "KEY SHEET LINKS (for reference, do not expose raw URLs to users):",
+    "- Reservations & Availability Sheet: " + SHEETS.main,
+    "- AV/Inventory Sheet: " + SHEETS.inventory,
     "",
-    "TENNIS COURTS:",
-    "  Tennis Court: https://docs.google.com/spreadsheets/d/e/2PACX-1vSXeutTA06JvvIqDmAr7g14ZaOYrxOUeNRbNMrVD_1ETNo_oA8dQmmUheN_KwPQ6IomCjZgr7q5fO6K/pubhtml?gid=1640909333&single=true",
-    "  Tennis Court Room 1: https://docs.google.com/spreadsheets/d/e/2PACX-1vSXeutTA06JvvIqDmAr7g14ZaOYrxOUeNRbNMrVD_1ETNo_oA8dQmmUheN_KwPQ6IomCjZgr7q5fO6K/pubhtml?gid=1634822982&single=true",
-    "  Tennis Court Room 2: https://docs.google.com/spreadsheets/d/e/2PACX-1vSXeutTA06JvvIqDmAr7g14ZaOYrxOUeNRbNMrVD_1ETNo_oA8dQmmUheN_KwPQ6IomCjZgr7q5fO6K/pubhtml?gid=475532241&single=true",
-    "",
-    "VTC FACILITIES:",
-    "  VTC Court: https://docs.google.com/spreadsheets/d/e/2PACX-1vSXeutTA06JvvIqDmAr7g14ZaOYrxOUeNRbNMrVD_1ETNo_oA8dQmmUheN_KwPQ6IomCjZgr7q5fO6K/pubhtml?gid=735489721&single=true",
-    "  VTC Meeting Room 1: https://docs.google.com/spreadsheets/d/e/2PACX-1vSXeutTA06JvvIqDmAr7g14ZaOYrxOUeNRbNMrVD_1ETNo_oA8dQmmUheN_KwPQ6IomCjZgr7q5fO6K/pubhtml?gid=1253621251&single=true",
-    "  VTC Meeting Room 2: https://docs.google.com/spreadsheets/d/e/2PACX-1vSXeutTA06JvvIqDmAr7g14ZaOYrxOUeNRbNMrVD_1ETNo_oA8dQmmUheN_KwPQ6IomCjZgr7q5fO6K/pubhtml?gid=1309697888&single=true",
-    "  VTC Weights Room: https://docs.google.com/spreadsheets/d/e/2PACX-1vSXeutTA06JvvIqDmAr7g14ZaOYrxOUeNRbNMrVD_1ETNo_oA8dQmmUheN_KwPQ6IomCjZgr7q5fO6K/pubhtml?gid=1673482118&single=true",
-    "",
-    "YLANAN COURTS (Basketball/Badminton):",
-    "  Ylanan Court 1: https://docs.google.com/spreadsheets/d/e/2PACX-1vSXeutTA06JvvIqDmAr7g14ZaOYrxOUeNRbNMrVD_1ETNo_oA8dQmmUheN_KwPQ6IomCjZgr7q5fO6K/pubhtml?gid=356190388&single=true",
-    "  Ylanan Court 2: https://docs.google.com/spreadsheets/d/e/2PACX-1vSXeutTA06JvvIqDmAr7g14ZaOYrxOUeNRbNMrVD_1ETNo_oA8dQmmUheN_KwPQ6IomCjZgr7q5fO6K/pubhtml?gid=630773403&single=true",
-    "  Ylanan Court 3: https://docs.google.com/spreadsheets/d/e/2PACX-1vSXeutTA06JvvIqDmAr7g14ZaOYrxOUeNRbNMrVD_1ETNo_oA8dQmmUheN_KwPQ6IomCjZgr7q5fO6K/pubhtml?gid=228253580&single=true",
-    "  Small Gym Court 4: https://docs.google.com/spreadsheets/d/e/2PACX-1vSXeutTA06JvvIqDmAr7g14ZaOYrxOUeNRbNMrVD_1ETNo_oA8dQmmUheN_KwPQ6IomCjZgr7q5fO6K/pubhtml?gid=1911761496&single=true",
-    "",
-    "HOW TO ANSWER AVAILABILITY QUESTIONS:",
-    "When asked about availability of a specific facility, provide the direct sheet link for that facility.",
-    "The sheet shows a schedule/calendar of approved reservations. If a date/time slot has no entry, it is AVAILABLE.",
-    "If a slot has an approved reservation entry, it is TAKEN.",
-    "Always suggest the user open the link to see the latest real-time data.",
-    "",
-    "RULES:",
-    "1. BETA — always recommend confirming with staff for critical bookings.",
-    "2. For availability: ask for date, time, and facility, then provide the specific sheet link.",
-    "3. Be concise, warm, professional. Use short paragraphs.",
-    "4. Share the direct sheet URLs so users can check availability themselves.",
-    "5. For reservations, direct them to the Venue Reservation form in the CHK Admin Portal.",
-    "6. Never make up prices — say: please contact the CHK Administrative Office for current rates.",
-    "7. Respond in English or Filipino depending on what language the user uses.",
-    "8. Keep responses under 180 words unless more detail is needed."
+    "IMPORTANT RULES:",
+    "1. You are in BETA — always recommend confirming with staff for critical bookings.",
+    "2. For availability checks: ask for the date, time, and facility they want.",
+    "3. Be concise, warm, and professional. Use short paragraphs.",
+    "4. If asked about exact current availability, explain you're checking the system and provide general guidance, since you cannot query sheets in real-time.",
+    "5. Always offer to help with next steps (contact staff, visit site, etc.).",
+    "6. Never make up prices — say 'please contact us for current rates'.",
+    "7. You speak English and Filipino (Tagalog) — respond in whatever language the user uses.",
+    "8. Keep responses under 150 words unless the user needs detail."
   ].join("\n");
 
   /* ── State ── */
