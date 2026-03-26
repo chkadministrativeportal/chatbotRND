@@ -1557,24 +1557,32 @@ VENUES.forEach(v=>{
   lower.split(/\s+/).forEach(w=>{ if(w.length>3&&!ALIAS[w]) ALIAS[w]=v; });
 });
 
-/* ── Fetch & parse a Google Sheets pubhtml page ── */
+/* ── Apps Script Proxy URL ─────────────────────────────────────────
+   After deploying CHK_Venue_Proxy.gs as a Web App, paste your URL below.
+   Replace PROXY_URL_HERE with the full https://script.google.com/macros/... URL
+   ────────────────────────────────────────────────────────────────── */
+const PROXY_URL = 'https://script.google.com/macros/s/AKfycbw2G34chSSF08ZpyouLQhuP97xCeU6zGaNblevS3Ypi7NuP3Va8Slo5A7P_gZa_UA86hw/exec';
+
+/* ── Fetch sheet via Apps Script proxy (no CORS issues) ── */
 async function fetchSheet(gid){
-  const url=`${BASE_URL}${gid}&single=true&rm=minimal`;
+  /* If proxy not yet configured, fall back gracefully */
+  if(!PROXY_URL || PROXY_URL === 'PROXY_URL_HERE'){
+    console.warn('CHK Venue Bot: PROXY_URL not set. Please deploy the Apps Script and update PROXY_URL.');
+    return null;
+  }
   try{
-    const r=await fetch(url,{cache:'no-store'});
+    const url = `${PROXY_URL}?gid=${encodeURIComponent(gid)}`;
+    const r = await fetch(url, {cache:'no-store'});
     if(!r.ok) return null;
-    const html=await r.text();
-    const parser=new DOMParser();
-    const doc=parser.parseFromString(html,'text/html');
-    const rows=[];
-    doc.querySelectorAll('table tr').forEach(tr=>{
-      const cells=[];
-      tr.querySelectorAll('td,th').forEach(td=>cells.push(td.textContent.trim()));
-      if(cells.some(c=>c)) rows.push(cells);
-    });
-    return rows.length?rows:null;
-  }catch(e){ return null; }
+    const json = await r.json();
+    if(!json.ok || !json.rows || !json.rows.length) return null;
+    return json.rows;
+  }catch(e){
+    console.error('fetchSheet error:', e);
+    return null;
+  }
 }
+
 
 /* ── Date helpers ── */
 const DAYS=['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
@@ -1746,12 +1754,8 @@ async function processQuery(userText){
   showTyping(false);
 
   if(!rows){
-    /* Fallback: ask Claude without sheet data */
-    showTyping(true);
-    const reply=await askClaude(userText,null);
-    showTyping(false);
-    if(reply) return reply;
-    return `I couldn't load the calendar for <strong>${venue.name}</strong> right now. Please try again shortly.`;
+    const calLink=`https://docs.google.com/spreadsheets/d/e/2PACX-1vSXeutTA06JvvIqDmAr7g14ZaOYrxOUeNRbNMrVD_1ETNo_oA8dQmmUheN_KwPQ6IomCjZgr7q5fO6K/pubhtml?gid=${venue.gid}&single=true&rm=minimal`;
+    return `⚠️ I can't retrieve the live schedule for <strong>${venue.name}</strong> due to a network restriction in this environment.<br><br>Check the schedule directly:<br><a href="${calLink}" target="_blank">📅 Open ${venue.name} Calendar ↗</a><br><br>To reserve: <a href="https://docs.google.com/forms/d/e/1FAIpQLSev3CV8mQ6YzfnugoWmSEkUgDEMt_cEDegbTKvKKHD9wwdsNA/viewform" target="_blank">Venue Reservation Form ↗</a>`;
   }
 
   /* Ask Claude with the spreadsheet context */
